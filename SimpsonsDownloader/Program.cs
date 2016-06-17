@@ -1,9 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace SimpsonsDownloader
@@ -15,38 +18,65 @@ namespace SimpsonsDownloader
         private static string seasonNumber;
         private static string episodeNumber;
         private static string pageSource;
-        static string testPage = "page.html";
-        static string testPagePath = Path.Combine(Environment.CurrentDirectory, testPage);
+        static string HtmlPagePath = Path.Combine(Environment.CurrentDirectory, "page.html");
 
         static void Main(string[] args)
         {
+
             if (args.Length == 0)
             {
-                Console.WriteLine("Set the season and episode numbers");
+                Console.WriteLine("Set the season and episode numbers. For ex. SimpsonsDownloader s4 e15");
             }
             else if (args.Length == 1)
             {
-                Console.WriteLine("Set the season and episode numbers. There must be two parameters");
+                Console.WriteLine("Set the season and episode numbers. There must be two parameters. For ex. SimpsonsDownloader s4 e15");
+            }
+            else if (args.Length > 2)
+            {
+                Console.WriteLine("Too much parameters. Set the season and episode numbers. There must be two parameters. For ex. SimpsonsDownloader s4 e15");
             }
             else
             {
+                if (args[0].Equals("0") || args[1].Equals("0") || args[0].Equals("00") || args[1].Equals("00"))
+                    Console.WriteLine("There is no season 0 or episode 0. Set the correct season and episode numbers. There must be two parameters. For ex. SimpsonsDownloader s4 e15");
+
                 try
                 {
-                    seasonNumber = args[0].Substring(1, args[0].Length - 1);
-                    episodeNumber = args[1].Substring(1, args[1].Length - 1);
+                    //getPageSource(getSeasonNumber(args[0]), getEpisodeNumber(args[1]));
                 }
                 catch (FormatException e)
                 {
                     Console.WriteLine(e.Message);
                 }
             }
-            getPageSource(seasonNumber, episodeNumber);
+
+            //downloadVideoFileByUrl(parsePageSourceAndGetVideoFileUrl(testPagePath, Encoding.UTF8));
+            //downloadSubtitleFileByUrl(parsePageSourceAndGetSubTitleFileUrl(testPagePath, Encoding.UTF8));
+            
+        }
+        private static string getSeasonNumber(string argument)
+        {
+            return argument.Substring(1, argument.Length - 1);
+        }
+        private static string getEpisodeNumber(string argument)
+        {
+            return argument.Substring(1, argument.Length - 1);
         }
         private static void getPageSource(string seasonNumber, string episodeNumber)
         {
+            if (episodeNumber.Length == 1)
+            {
+                if (Int32.Parse(episodeNumber) <= 9)
+                {
+                    episodeNumber = "0" + episodeNumber;
+                }
+            }
+
             string definedUrlToSimpsonsSite = sipsonsSite + "series.php?id=" + seasonNumber + episodeNumber + "&voice=8";
+
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(definedUrlToSimpsonsSite);
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 Stream receiveStream = response.GetResponseStream();
@@ -63,14 +93,66 @@ namespace SimpsonsDownloader
 
                 pageSource = readStream.ReadToEnd();
                 Console.WriteLine(pageSource);
-                Thread.Sleep(1000);
-                StreamWriter writer = new StreamWriter(testPagePath);
+                Console.ReadLine();
+                StreamWriter writer = new StreamWriter(HtmlPagePath);
 
                 writer.WriteLine(pageSource);
                 response.Close();
                 readStream.Close();
             }
-            //return pageSource;
+        }
+        private static string parsePageSourceAndGetVideoFileUrl(string pageSourceFile, Encoding encoding)
+        {
+            string wholeDocumentString;
+            string patternForVideoFileUrl = "http[^,]*\\.mp4";
+
+            using (StreamReader streamReader = new StreamReader(pageSourceFile, encoding))
+            {
+                wholeDocumentString = streamReader.ReadToEnd();
+            }
+
+            Match result = Regex.Match(wholeDocumentString, patternForVideoFileUrl);
+
+            return result.ToString();
+        }
+
+        private static string parsePageSourceAndGetSubTitleFileUrl(string pageSourceFile, Encoding encoding)
+        {
+            string wholeDocumentString;
+            string convertedResult;
+            string patternForVideoFileUrl = "'st':'http.*?'";
+
+            using (StreamReader streamReader = new StreamReader(pageSourceFile, encoding))
+            {
+                wholeDocumentString = streamReader.ReadToEnd();
+            }
+
+            Match result = Regex.Match(wholeDocumentString, patternForVideoFileUrl);
+            convertedResult = result.ToString().Substring(6, result.ToString().Length - 7);
+
+            return convertedResult;
+        }
+        private static void downloadVideoFileByUrl(string videoFileUrl)
+        {
+            WebClient webClient;
+            Stopwatch stopWatch = new Stopwatch();
+
+            using (webClient = new WebClient())
+            {
+                //webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(Completed);
+                //webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(ProgressChanged);
+                //Uri URL = videoFileUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase);
+                webClient.DownloadFile(videoFileUrl, pathForDownloading + "\\The Simpons " + seasonNumber + "_" + episodeNumber + ".mp4");
+            }
+        }
+        private static void downloadSubtitleFileByUrl(string subTitleFileUrl)
+        {
+            WebClient webClient;
+            //string SubtitleFileExtension = subTitleFileUrl.Substring();
+            using (webClient = new WebClient())
+            {
+                webClient.DownloadFile(subTitleFileUrl, pathForDownloading + "\\The Simpons " + seasonNumber + "_" + episodeNumber + ".txt");
+            }
         }
     }
 }
