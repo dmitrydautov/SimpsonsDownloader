@@ -52,7 +52,7 @@ namespace SimpsonsDownloader
 
             //downloadVideoFileByUrl(parsePageSourceAndGetVideoFileUrl(testPagePath, Encoding.UTF8));
             //downloadSubtitleFileByUrl(parsePageSourceAndGetSubTitleFileUrl(testPagePath, Encoding.UTF8));
-            
+
         }
         private static string getSeasonNumber(string argument)
         {
@@ -66,10 +66,8 @@ namespace SimpsonsDownloader
         {
             if (episodeNumber.Length == 1)
             {
-                if (Int32.Parse(episodeNumber) <= 9)
-                {
-                    episodeNumber = "0" + episodeNumber;
-                }
+                if (Int32.Parse(episodeNumber) <= 9) episodeNumber = "0" + episodeNumber;
+
             }
 
             string definedUrlToSimpsonsSite = sipsonsSite + "series.php?id=" + seasonNumber + episodeNumber + "&voice=8";
@@ -119,7 +117,6 @@ namespace SimpsonsDownloader
         private static string parsePageSourceAndGetSubTitleFileUrl(string pageSourceFile, Encoding encoding)
         {
             string wholeDocumentString;
-            string convertedResult;
             string patternForVideoFileUrl = "'st':'http.*?'";
 
             using (StreamReader streamReader = new StreamReader(pageSourceFile, encoding))
@@ -128,9 +125,8 @@ namespace SimpsonsDownloader
             }
 
             Match result = Regex.Match(wholeDocumentString, patternForVideoFileUrl);
-            convertedResult = result.ToString().Substring(6, result.ToString().Length - 7);
 
-            return convertedResult;
+            return result.ToString().Substring(6, result.ToString().Length - 7);
         }
         private static void downloadVideoFileByUrl(string videoFileUrl)
         {
@@ -142,7 +138,7 @@ namespace SimpsonsDownloader
                 //webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(Completed);
                 //webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(ProgressChanged);
                 //Uri URL = videoFileUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase);
-                webClient.DownloadFile(videoFileUrl, pathForDownloading + "\\The Simpons " + seasonNumber + "_" + episodeNumber + ".mp4");
+                webClient.DownloadFile(videoFileUrl, pathForDownloading + "\\The Simpons s" + seasonNumber + "_e" + episodeNumber + ".mp4");
             }
         }
         private static void downloadSubtitleFileByUrl(string subTitleFileUrl)
@@ -151,7 +147,7 @@ namespace SimpsonsDownloader
             //string SubtitleFileExtension = subTitleFileUrl.Substring();
             using (webClient = new WebClient())
             {
-                webClient.DownloadFile(subTitleFileUrl, pathForDownloading + "\\The Simpons " + seasonNumber + "_" + episodeNumber + ".txt");
+                webClient.DownloadFile(subTitleFileUrl, pathForDownloading + "\\The Simpons s" + seasonNumber + "_e" + episodeNumber + ".txt");
             }
         }
     }
