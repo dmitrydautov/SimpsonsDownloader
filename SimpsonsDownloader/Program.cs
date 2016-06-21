@@ -15,12 +15,8 @@ namespace SimpsonsDownloader
     {
         private static string sipsonsSite = "http://simpsons.fox-fan.ru/";
         private static string pathForDownloading = "D:\\Movies\\The Simpsons";
-        private static string seasonNumber;
-        private static string episodeNumber;
-        private static string pageSource;
-        private static string SubtitleFileExtension;
-        private static string VideoFileExtension;
-        static string HtmlPagePath = Path.Combine(Environment.CurrentDirectory, "page.html");
+        private static string seasonNumber, episodeNumber, pageSource, SubtitleFileExtension, VideoFileExtension;
+        private static string HtmlPagePath = Path.Combine(Environment.CurrentDirectory, "page.html");
 
         static void Main(string[] args)
         {
@@ -40,7 +36,7 @@ namespace SimpsonsDownloader
             else
             {
                 if (args[0].Equals("0") || args[1].Equals("0") || args[0].Equals("00") || args[1].Equals("00"))
-                    Console.WriteLine("There is no season 0 or episode 0. Set the correct season and episode numbers. There must be two parameters. For ex. SimpsonsDownloader s4 e15");
+                    Console.WriteLine("There is no season " + args[0] + " or episode " + args[0] + ". Set the correct season and episode numbers. There must be two parameters. For ex. SimpsonsDownloader s4 e15");
 
                 try
                 {
@@ -54,17 +50,19 @@ namespace SimpsonsDownloader
 
             //downloadVideoFileByUrl(parsePageSourceAndGetVideoFileUrl(HtmlPagePath, Encoding.UTF8));
             //downloadSubtitleFileByUrl(parsePageSourceAndGetSubTitleFileUrl(HtmlPagePath, Encoding.UTF8));
-            //parsePageSourceAndGetSubTitleFileUrl(HtmlPagePath, Encoding.UTF8);
 
         }
+
         private static string getSeasonNumber(string argument)
         {
             return argument.Substring(1, argument.Length - 1);
         }
+
         private static string getEpisodeNumber(string argument)
         {
             return argument.Substring(1, argument.Length - 1);
         }
+
         private static void getPageSource(string seasonNumber, string episodeNumber)
         {
             if (episodeNumber.Length == 1)
@@ -100,6 +98,7 @@ namespace SimpsonsDownloader
                 readStream.Close();
             }
         }
+
         private static string parsePageSourceAndGetVideoFileUrl(string pageSourceFile, Encoding encoding)
         {
             string wholeDocumentString;
@@ -129,6 +128,7 @@ namespace SimpsonsDownloader
 
             return result.ToString().Substring(6, result.ToString().Length - 7);
         }
+
         private static void downloadVideoFileByUrl(string videoFileUrl)
         {
             WebClient webClient;
@@ -144,6 +144,7 @@ namespace SimpsonsDownloader
                 webClient.DownloadFile(videoFileUrl, pathForDownloading + "\\The Simpons s" + seasonNumber + "_e" + episodeNumber + VideoFileExtension);
             }
         }
+
         private static void downloadSubtitleFileByUrl(string subTitleFileUrl)
         {
             WebClient webClient;
